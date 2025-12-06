@@ -19,6 +19,8 @@ async function awaitForAllServices() {
   }
 }
 
-export default {
+const orchestrator = {
   awaitForAllServices,
 };
+
+export default orchestrator;

@@ -16,12 +16,25 @@ export default function StatusPage() {
     <>
       <h1>Status</h1>
       <div>
-        {isLoading
+        {isLoading && !data
           ? `Carregando...`
           : `Última atualização: ${new Date(data.updated_at).toLocaleString("pt-BR")}`}
       </div>
 
-      <div>{data && JSON.stringify(data.dependencies.database, null, 2)}</div>
+      <h2>Database</h2>
+      {isLoading && !data ? (
+        `Carregando...`
+      ) : (
+        <>
+          <div>Versão: {data.dependencies.database.version}</div>
+          <div>
+            Conexões abertas: {data.dependencies.database.opened_connections}
+          </div>
+          <div>
+            Conexões máximas: {data.dependencies.database.max_connections}
+          </div>
+        </>
+      )}
     </>
   );
 }

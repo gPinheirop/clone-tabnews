@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import controller from "infra/controller/controller";
+import controller from "infra/controller";
 import database from "infra/database";
 import { createRouter } from "next-connect";
 import migrationRunner from "node-pg-migrate";

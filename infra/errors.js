@@ -57,3 +57,24 @@ export class MethodNotAllowedError extends Error {
     };
   }
 }
+
+export class ValidationError extends Error {
+  constructor({ cause, message, action }) {
+    super(message || "Serviço indisponível no momento.", {
+      cause,
+    });
+
+    this.name = "ValidationError";
+    this.action = action || "Verifique se os campos estão corretos";
+    this.statusCode = 400;
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: 400,
+    };
+  }
+}

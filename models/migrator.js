@@ -1,13 +1,13 @@
 import { resolve } from "node:path";
 import database from "infra/database";
-import migrationRunner from "node-pg-migrate";
 import { ServiceError } from "infra/errors";
+import migrationRunner from "node-pg-migrate";
 
 const defaultMigrationObject = {
   dryRun: true,
   dir: resolve("infra", "migrations"),
   direction: "up",
-  verbose: true,
+  log: () => {},
   migrationsTable: "pgmigrations",
 };
 

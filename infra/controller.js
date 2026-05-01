@@ -1,3 +1,4 @@
+import * as cookie from "cookie";
 import {
   InternalServerError,
   MethodNotAllowedError,
@@ -5,6 +6,7 @@ import {
   UnauthorizedError,
   ValidationError,
 } from "infra/errors";
+import session from "models/session";
 
 function onNoMatchHandler(_, response) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -27,11 +29,23 @@ function onErrorHandler(error, _, response) {
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
+function setSessionCookie(token, response) {
+  const setCookie = cookie.serialize("session_id", token, {
+    path: "/",
+    maxAge: session.EXPIRATION_IN_MILLISSECONDS / 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  response.setHeader("Set-Cookie", setCookie);
+}
+
 const controller = {
   errorHandlers: {
     onNoMatch: onNoMatchHandler,
     onError: onErrorHandler,
   },
+  setSessionCookie,
 };
 
 export default controller;

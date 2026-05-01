@@ -111,6 +111,28 @@ async function findUserByEmail(email) {
   }
 }
 
+async function findUserById(id) {
+  const user = await runSelectQuery(id);
+
+  return user;
+
+  async function runSelectQuery(id) {
+    const result = await database.query({
+      text: "SELECT * FROM users WHERE id = $1 LIMIT 1",
+      values: [id],
+    });
+
+    if (result.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Usuário não encontrado",
+        action: "Verifique o id e tente novamente",
+      });
+    }
+
+    return result.rows[0];
+  }
+}
+
 async function hashPasswordInObject(newUserInputValues) {
   const hasedPassword = await password.hash(newUserInputValues.password);
   newUserInputValues.password = hasedPassword;
@@ -149,6 +171,7 @@ const user = {
   update,
   findUserByUsername,
   findUserByEmail,
+  findUserById,
 };
 
 export default user;

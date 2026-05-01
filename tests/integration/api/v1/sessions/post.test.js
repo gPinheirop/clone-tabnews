@@ -135,11 +135,9 @@ describe("POST /api/v1/sessions", () => {
 
       expect(expiresAt - createdAt).toBe(session.EXPIRATION_IN_MILLISSECONDS);
 
-      console.log(response.headers.getSetCookie());
       const parsetSetCookie = cookie.parseSetCookie(
         response.headers.getSetCookie()[0],
       );
-      console.log(parsetSetCookie);
       expect(parsetSetCookie).toEqual({
         name: "session_id",
         value: parsetSetCookie.value,

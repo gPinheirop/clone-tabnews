@@ -26,9 +26,20 @@ async function create(userId) {
   return results.rows[0];
 }
 
-async function findByUserId(id) {
+async function findValidById(id) {
   const results = await database.query({
-    text: "SELECT * FROM user_activation_tokens WHERE user_id = $1 LIMIT 1",
+    text: `
+    SELECT
+      *
+    FROM
+      user_activation_tokens
+    WHERE
+      id = $1
+    AND expires_at > NOW()
+    AND used_at IS NULL
+    LIMIT
+      1
+    ;`,
     values: [id],
   });
 
@@ -38,6 +49,6 @@ async function findByUserId(id) {
 const activation = {
   sendEmailToUser,
   create,
-  findByUserId,
+  findValidById,
 };
 export default activation;

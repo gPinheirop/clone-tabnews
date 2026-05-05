@@ -7,6 +7,7 @@ import {
   UnauthorizedError,
   ValidationError,
 } from "infra/errors";
+import authorization from "models/authorization";
 import session from "models/session";
 import user from "models/users";
 
@@ -92,9 +93,7 @@ function canRequest(feature) {
   return function canRequestMiddleware(request, _, next) {
     const userTryingToRequest = request.context.user;
 
-    console.log(userTryingToRequest);
-
-    if (userTryingToRequest.features.includes(feature)) return next();
+    if (authorization.can(userTryingToRequest, feature)) return next();
 
     throw new ForbiddenError({
       message: "Você não possui permissão para acessar esse recurso",

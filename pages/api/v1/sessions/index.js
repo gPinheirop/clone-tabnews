@@ -18,6 +18,8 @@ async function postHandler(request, response) {
     loginInputValues.password,
   );
 
+  session.canCreateSession(authenticatedUser);
+
   const newSession = await session.create(authenticatedUser.id);
 
   controller.setSessionCookie(newSession.token, response);

@@ -153,7 +153,6 @@ describe("POST /api/v1/users", () => {
       expect(user2Response.status).toBe(403);
 
       const user2ResponseBody = await user2Response.json();
-      console.log(user2ResponseBody);
 
       expect(user2ResponseBody).toEqual({
         action: "Verifique se seu usuário possui a feature: create:user",

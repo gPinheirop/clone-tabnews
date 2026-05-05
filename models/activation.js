@@ -1,6 +1,7 @@
 import database from "infra/database";
 import email from "infra/email";
 import webserver from "infra/webserver";
+import user from "./users";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; //15 minutes
 
@@ -46,9 +47,35 @@ async function findValidById(id) {
   return results.rows[0];
 }
 
+async function maskTokenAsUsed(id) {
+  const results = await database.query({
+    text: `
+    UPDATE
+      user_activation_tokens
+    SET
+      used_at = timezone('utc', now()),
+      updated_at = timezone('utc', now())
+    WHERE
+      id = $1
+    RETURNING
+      *;`,
+    values: [id],
+  });
+
+  return results.rows[0];
+}
+
+async function activateUserByUserId(userId) {
+  const activatedUser = user.setFeatures(userId, ["create:session"]);
+
+  return activatedUser;
+}
+
 const activation = {
   sendEmailToUser,
   create,
   findValidById,
+  maskTokenAsUsed,
+  activateUserByUserId,
 };
 export default activation;

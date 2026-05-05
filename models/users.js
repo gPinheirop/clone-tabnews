@@ -171,12 +171,30 @@ async function validadeUniqueEmail(email) {
   }
 }
 
+async function setFeatures(id, features) {
+  const results = await database.query({
+    text: `
+    UPDATE
+      users
+    SET
+      features = $2,
+      updated_at = timezone('utc', now())
+    WHERE
+      id = $1
+    RETURNING
+      *;`,
+    values: [id, features],
+  });
+  return results.rows[0];
+}
+
 const user = {
   create,
   update,
   findUserByUsername,
   findUserByEmail,
   findUserById,
+  setFeatures,
 };
 
 export default user;

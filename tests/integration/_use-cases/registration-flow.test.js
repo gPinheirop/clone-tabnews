@@ -16,7 +16,7 @@ describe("Use case: Registration Flow (all successful)", () => {
   let createSessionsResponseBody;
   test("Create user account", async () => {
     const createUserResponse = await fetch(
-      "http://localhost:3000/api/v1/users",
+      `${webserver.originAPI}/users`,
       {
         method: "POST",
         headers: {
@@ -51,7 +51,7 @@ describe("Use case: Registration Flow (all successful)", () => {
 
     activationToken = orchestrator.extractUUID(lastEmail.text);
     expect(lastEmail.text).toContain(
-      `${webserver.origin}/cadastro/ativar/${activationToken}`,
+      `${webserver.originAPI}/cadastro/ativar/${activationToken}`,
     );
 
     const activationTokenObject =
@@ -62,7 +62,7 @@ describe("Use case: Registration Flow (all successful)", () => {
 
   test("Activate account", async () => {
     const activationResponse = await fetch(
-      `http://localhost:3000/api/v1/activations/${activationToken}`,
+      `${webserver.originAPI}/activations/${activationToken}`,
       {
         method: "PATCH",
       },
@@ -83,7 +83,7 @@ describe("Use case: Registration Flow (all successful)", () => {
 
   test("Login", async () => {
     const createSessionsResponse = await fetch(
-      "http://localhost:3000/api/v1/sessions",
+      `${webserver.originAPI}/sessions`,
       {
         method: "POST",
         headers: {
@@ -104,7 +104,7 @@ describe("Use case: Registration Flow (all successful)", () => {
   });
 
   test("Get user information", async () => {
-    const userResponse = await fetch(`http://localhost:3000/api/v1/user/`, {
+    const userResponse = await fetch(`${webserver.originAPI}/user/`, {
       headers: {
         cookie: `session_id=${createSessionsResponseBody.token}`,
       },

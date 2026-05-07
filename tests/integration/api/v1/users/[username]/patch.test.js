@@ -2,6 +2,7 @@ import password from "models/password";
 import user from "models/users";
 import { version as uuidVersion } from "uuid";
 import orchestrator from "../../orchestrator";
+import webserver from "infra/webserver";
 
 beforeAll(async () => {
   await orchestrator.awaitForAllServices();
@@ -18,18 +19,15 @@ describe("PATCH /api/v1/users/[username]", () => {
         password: "senhaTeste",
       });
 
-      const response = await fetch(
-        "http://localhost:3000/api/v1/users/uniqueUser",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: "uniqueUser2",
-          }),
+      const response = await fetch(`${webserver.originAPI}/users/uniqueUser`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          username: "uniqueUser2",
+        }),
+      });
 
       expect(response.status).toBe(403);
 
@@ -50,7 +48,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         activatedUser.id,
       );
       const response = await fetch(
-        "http://localhost:3000/api/v1/users/usuarioInexisetnte",
+        `${webserver.originAPI}/users/usuarioInexisetnte`,
         {
           method: "PATCH",
           headers: {
@@ -85,7 +83,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         activatedUser2.id,
       );
 
-      const response = await fetch("http://localhost:3000/api/v1/users/user2", {
+      const response = await fetch(`${webserver.originAPI}/users/user2`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -122,19 +120,16 @@ describe("PATCH /api/v1/users/[username]", () => {
         activatedUser2.id,
       );
 
-      const response = await fetch(
-        "http://localhost:3000/api/v1/users/user42",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: `session_id=${sessionObject2.token}`,
-          },
-          body: JSON.stringify({
-            username: "user44",
-          }),
+      const response = await fetch(`${webserver.originAPI}/users/user42`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_id=${sessionObject2.token}`,
         },
-      );
+        body: JSON.stringify({
+          username: "user44",
+        }),
+      });
 
       expect(response.status).toBe(403);
 
@@ -161,7 +156,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${newUser.username}`,
+        `${webserver.originAPI}/users/${newUser.username}`,
         {
           method: "PATCH",
           headers: {
@@ -196,19 +191,16 @@ describe("PATCH /api/v1/users/[username]", () => {
         activatedUser.id,
       );
 
-      const response = await fetch(
-        "http://localhost:3000/api/v1/users/uniqueUser1",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            username: "uniqueUser2",
-          }),
+      const response = await fetch(`${webserver.originAPI}/users/uniqueUser1`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_id=${sessionObject.token}`,
         },
-      );
+        body: JSON.stringify({
+          username: "uniqueUser2",
+        }),
+      });
 
       expect(response.status).toBe(200);
 
@@ -239,7 +231,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       const response = await fetch(
-        "http://localhost:3000/api/v1/users/uniqueUserEmail",
+        `${webserver.originAPI}/users/uniqueUserEmail`,
         {
           method: "PATCH",
           headers: {
@@ -280,7 +272,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       const response = await fetch(
-        "http://localhost:3000/api/v1/users/uniqueUserPassword",
+        `${webserver.originAPI}/users/uniqueUserPassword`,
         {
           method: "PATCH",
           headers: {
@@ -345,7 +337,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: "userY",
       });
 
-      const response = await fetch("http://localhost:3000/api/v1/users/userY", {
+      const response = await fetch(`${webserver.originAPI}/users/userY`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

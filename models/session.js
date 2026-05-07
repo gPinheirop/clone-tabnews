@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import database from "infra/database";
-import { UnauthorizedError } from "infra/errors";
+import { ForbiddenError, UnauthorizedError } from "infra/errors";
+import authorization from "./authorization";
 
 // 30 days
 const EXPIRATION_IN_MILLISSECONDS = 60 * 60 * 24 * 30 * 1000;
@@ -63,11 +64,21 @@ async function expireById(id) {
   return results.rows[0];
 }
 
+function canCreateSession(user) {
+  if (!authorization.can(user, "create:session")) {
+    throw new ForbiddenError({
+      message: "Você não possui permissão para fazer login.",
+      action: "Entre em contato com o suporte caso acredite que seja um erro.",
+    });
+  }
+}
+
 const session = {
   create,
   renew,
   expireById,
   findOneValidByToken,
+  canCreateSession,
   EXPIRATION_IN_MILLISSECONDS,
 };
 

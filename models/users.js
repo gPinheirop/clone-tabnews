@@ -6,17 +6,22 @@ async function create(newUserInputValues) {
   await validadeUniqueUsername(newUserInputValues.username);
   await validadeUniqueEmail(newUserInputValues.email);
   await hashPasswordInObject(newUserInputValues);
+  await injectDefaultFeaturesInObject(newUserInputValues);
 
   const newUser = await runInsertQuery(newUserInputValues);
   return newUser;
 
-  async function runInsertQuery({ username, email, password }) {
+  async function runInsertQuery({ username, email, password, features }) {
     const result = await database.query({
-      text: "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
-      values: [username, email, password],
+      text: "INSERT INTO users (username, email, password, features) VALUES ($1, $2, $3, $4) RETURNING *",
+      values: [username, email, password, features],
     });
 
     return result.rows[0];
+  }
+
+  async function injectDefaultFeaturesInObject(newUserInputValues) {
+    newUserInputValues.features = ["read:activation_token"];
   }
 }
 
@@ -166,12 +171,49 @@ async function validadeUniqueEmail(email) {
   }
 }
 
+async function setFeatures(id, features) {
+  const results = await database.query({
+    text: `
+    UPDATE
+      users
+    SET
+      features = $2,
+      updated_at = timezone('utc', now())
+    WHERE
+      id = $1
+    RETURNING
+      *;`,
+    values: [id, features],
+  });
+  return results.rows[0];
+}
+
+async function addFeatures(id, features) {
+  const results = await database.query({
+    text: `
+    UPDATE
+      users
+    SET
+      features = array_cat(features, $2),
+      updated_at = timezone('utc', now())
+    WHERE
+      id = $1
+    RETURNING
+      *;`,
+    values: [id, features],
+  });
+
+  return results.rows[0];
+}
+
 const user = {
   create,
   update,
   findUserByUsername,
   findUserByEmail,
   findUserById,
+  setFeatures,
+  addFeatures,
 };
 
 export default user;

@@ -11,10 +11,52 @@ beforeAll(async () => {
 
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
+    test("With unique 'username'", async () => {
+      await orchestrator.createUser({
+        username: "uniqueUser",
+        email: "usuario@unico.com",
+        password: "senhaTeste",
+      });
+
+      const response = await fetch(
+        "http://localhost:3000/api/v1/users/uniqueUser",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: "uniqueUser2",
+          }),
+        },
+      );
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        name: "ForbiddenError",
+        message: "Você não possui permissão para acessar esse recurso",
+        action: "Verifique se seu usuário possui a feature: update:user",
+        status_code: 403,
+      });
+    });
+  });
+  describe("Default user", () => {
     test("With nonexisting 'username'", async () => {
+      const createdUser = await orchestrator.createUser();
+      const activatedUser = await orchestrator.activateUserById(createdUser.id);
+      const sessionObject = await await orchestrator.createSession(
+        activatedUser.id,
+      );
       const response = await fetch(
         "http://localhost:3000/api/v1/users/usuarioInexisetnte",
-        { method: "PATCH" },
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: `session_id=${sessionObject.token}`,
+          },
+        },
       );
       expect(response.status).toBe(404);
 
@@ -32,14 +74,22 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: "user1",
       });
 
-      await orchestrator.createUser({
+      const createdUser2 = await orchestrator.createUser({
         username: "user2",
       });
+
+      const activatedUser2 = await orchestrator.activateUserById(
+        createdUser2.id,
+      );
+      const sessionObject2 = await await orchestrator.createSession(
+        activatedUser2.id,
+      );
 
       const response = await fetch("http://localhost:3000/api/v1/users/user2", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Cookie: `session_id=${sessionObject2.token}`,
         },
         body: JSON.stringify({
           username: "user1",
@@ -56,6 +106,46 @@ describe("PATCH /api/v1/users/[username]", () => {
         status_code: 400,
       });
     });
+    test("With user2 targeting user1", async () => {
+      await orchestrator.createUser({
+        username: "user42",
+      });
+
+      const createdUser2 = await orchestrator.createUser({
+        username: "user43",
+      });
+
+      const activatedUser2 = await orchestrator.activateUserById(
+        createdUser2.id,
+      );
+      const sessionObject2 = await await orchestrator.createSession(
+        activatedUser2.id,
+      );
+
+      const response = await fetch(
+        "http://localhost:3000/api/v1/users/user42",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject2.token}`,
+          },
+          body: JSON.stringify({
+            username: "user44",
+          }),
+        },
+      );
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        action: "Verifique suas permissões antes de tentar novamente",
+        message: "Você não possui a permissão para atualizar outro usuário",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
     test("With duplicated 'email'", async () => {
       await orchestrator.createUser({
         email: "email@duplicado1.com",
@@ -65,12 +155,18 @@ describe("PATCH /api/v1/users/[username]", () => {
         email: "email@duplicado2.com",
       });
 
+      const newActivatedUser = await orchestrator.activateUserById(newUser.id);
+      const newSessionObject = await await orchestrator.createSession(
+        newActivatedUser.id,
+      );
+
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${newUser.username}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${newSessionObject.token}`,
           },
           body: JSON.stringify({
             email: "email@duplicado1.com",
@@ -89,21 +185,27 @@ describe("PATCH /api/v1/users/[username]", () => {
       });
     });
     test("With unique 'username'", async () => {
-      await orchestrator.createUser({
-        username: "uniqueUser",
-        email: "usuario@unico.com",
+      const createdUser = await orchestrator.createUser({
+        username: "uniqueUser1",
+        email: "usuario@unico1.com",
         password: "senhaTeste",
       });
 
+      const activatedUser = await orchestrator.activateUserById(createdUser.id);
+      const sessionObject = await await orchestrator.createSession(
+        activatedUser.id,
+      );
+
       const response = await fetch(
-        "http://localhost:3000/api/v1/users/uniqueUser",
+        "http://localhost:3000/api/v1/users/uniqueUser1",
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            username: "uniqueUser1",
+            username: "uniqueUser2",
           }),
         },
       );
@@ -111,11 +213,11 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
+
       expect(responseBody).toEqual({
         id: responseBody.id,
-        username: "uniqueUser1",
-        email: "usuario@unico.com",
-        password: responseBody.password,
+        username: "uniqueUser2",
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -126,11 +228,15 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
     test("With unique 'email'", async () => {
-      await orchestrator.createUser({
+      const createdUser = await orchestrator.createUser({
         username: "uniqueUserEmail",
         email: "email@unico.com",
         password: "senhaTeste",
       });
+      const activatedUser = await orchestrator.activateUserById(createdUser.id);
+      const sessionObject = await await orchestrator.createSession(
+        activatedUser.id,
+      );
 
       const response = await fetch(
         "http://localhost:3000/api/v1/users/uniqueUserEmail",
@@ -138,6 +244,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
             email: "email@unico1.com",
@@ -151,8 +258,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "uniqueUserEmail",
-        email: "email@unico1.com",
-        password: responseBody.password,
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -163,11 +269,15 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
     test("With new 'password'", async () => {
-      await orchestrator.createUser({
+      const createdUser = await orchestrator.createUser({
         username: "uniqueUserPassword",
         email: "senha@unica.com",
         password: "senhaUnica",
       });
+      const activatedUser = await orchestrator.activateUserById(createdUser.id);
+      const sessionObject = await await orchestrator.createSession(
+        activatedUser.id,
+      );
 
       const response = await fetch(
         "http://localhost:3000/api/v1/users/uniqueUserPassword",
@@ -175,6 +285,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
             password: "senhaUnica1",
@@ -188,8 +299,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "uniqueUserPassword",
-        email: "senha@unica.com",
-        password: responseBody.password,
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -208,6 +318,54 @@ describe("PATCH /api/v1/users/[username]", () => {
         userInDatabase.password,
       );
       expect(incorrectPasswordMatch).toBe(false);
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > responseBody.created_at).toBe(true);
+    });
+  });
+  describe("Privileged user", () => {
+    test("with 'update:user:others' targeting default user 'userY'", async () => {
+      const privilegedUser = await orchestrator.createUser({
+        username: "userX",
+      });
+      const activatedPrivilegedUser = await orchestrator.activateUserById(
+        privilegedUser.id,
+      );
+      const privilegeSession = await orchestrator.createSession(
+        activatedPrivilegedUser.id,
+      );
+
+      await orchestrator.addFeaturesToUser(privilegedUser, [
+        "update:user:others",
+      ]);
+
+      await orchestrator.createUser({
+        username: "userY",
+      });
+
+      const response = await fetch("http://localhost:3000/api/v1/users/userY", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_id=${privilegeSession.token}`,
+        },
+        body: JSON.stringify({
+          username: "userZ",
+        }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        username: "userZ",
+        features: ["read:activation_token"],
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();

@@ -5,9 +5,10 @@ import user from "models/users";
 import { createRouter } from "next-connect";
 
 const router = createRouter();
-router.use(controller.injectAnonymousOrUser);
-router.get(getHandler);
-router.patch(controller.canRequest("update:user"), patchHandler);
+router
+  .use(controller.injectAnonymousOrUser)
+  .get(getHandler)
+  .patch(controller.canRequest("update:user"), patchHandler);
 
 export default router.handler(controller.errorHandlers);
 

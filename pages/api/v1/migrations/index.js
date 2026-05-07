@@ -5,9 +5,10 @@ import { createRouter } from "next-connect";
 
 const router = createRouter();
 
-router.use(controller.injectAnonymousOrUser);
-router.get(controller.canRequest("read:migration"), getHandler);
-router.post(controller.canRequest("create:migration"), postHandler);
+router
+  .use(controller.injectAnonymousOrUser)
+  .get(controller.canRequest("read:migration"), getHandler)
+  .post(controller.canRequest("create:migration"), postHandler);
 
 export default router.handler(controller.errorHandlers);
 

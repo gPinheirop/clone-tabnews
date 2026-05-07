@@ -1,5 +1,6 @@
 import { version as uuidVersion } from "uuid";
 import orchestrator from "../../orchestrator";
+import webserver from "infra/webserver";
 
 beforeAll(async () => {
   await orchestrator.awaitForAllServices();
@@ -16,9 +17,7 @@ describe("GET /api/v1/users/[username]", () => {
         password: "senhaTeste",
       });
 
-      const response2 = await fetch(
-        "http://localhost:3000/api/v1/users/testeExato",
-      );
+      const response2 = await fetch(`${webserver.originAPI}/users/testeExato`);
       expect(response2.status).toBe(200);
 
       const response2Body = await response2.json();
@@ -43,7 +42,7 @@ describe("GET /api/v1/users/[username]", () => {
       });
 
       const response2 = await fetch(
-        "http://localhost:3000/api/v1/users/testecasediferente",
+        `${webserver.originAPI}/users/testecasediferente`,
       );
       expect(response2.status).toBe(200);
 
@@ -63,7 +62,7 @@ describe("GET /api/v1/users/[username]", () => {
     });
     test("With nonexisting username", async () => {
       const response = await fetch(
-        "http://localhost:3000/api/v1/users/usuarioInexisetnte",
+        `${webserver.originAPI}/users/usuarioInexisetnte`,
       );
       expect(response.status).toBe(404);
 

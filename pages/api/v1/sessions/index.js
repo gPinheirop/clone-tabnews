@@ -5,9 +5,10 @@ import session from "models/session";
 import { createRouter } from "next-connect";
 
 const router = createRouter();
-router.use(controller.injectAnonymousOrUser);
-router.post(controller.canRequest("create:session"), postHandler);
-router.delete(deleteHandler);
+router
+  .use(controller.injectAnonymousOrUser)
+  .post(controller.canRequest("create:session"), postHandler)
+  .delete(deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 

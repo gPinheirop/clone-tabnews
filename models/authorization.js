@@ -1,4 +1,28 @@
+import { InternalServerError } from "infra/errors";
+
+const AVAILABLE_FEATURES = [
+  // USER
+  "create:user",
+  "read:user",
+  "read:user:self",
+  "update:user",
+  "update:user:others",
+  // SESSION
+  "create:session",
+  "read:session",
+  // ACTIVATION_TOKEN
+  "read:activation:token",
+  // MIGRATION
+  "create:migration",
+  "read:migration",
+  // STATUS
+  "read:status",
+  "read:status:all",
+];
+
 function can(user, feature, resource) {
+  validateUser(user);
+  validateFeature(feature);
   let authorized = false;
 
   if (user.features.includes(feature)) {
@@ -15,6 +39,9 @@ function can(user, feature, resource) {
 }
 
 function filterOutput(user, feature, unfilteredOutput) {
+  validateUser(user);
+  validateFeature(feature);
+  validateUnfilteredOutput(unfilteredOutput);
   if (feature === "read:user:self") {
     if (user.id === unfilteredOutput.id) {
       return {
@@ -84,6 +111,32 @@ function filterOutput(user, feature, unfilteredOutput) {
         unfilteredOutput.dependencies.database.version;
     }
     return output;
+  }
+}
+
+function validateUser(user) {
+  if (!user || !user.features) {
+    throw new InternalServerError({
+      cause: "É necessário fornecer 'user' no 'authorization.can'",
+    });
+  }
+}
+
+function validateFeature(feature) {
+  if (!feature || !AVAILABLE_FEATURES.includes(feature)) {
+    throw new InternalServerError({
+      cause:
+        "Não foi possível encontrar a 'feature' solicitada no 'authorization.can'",
+    });
+  }
+}
+
+function validateUnfilteredOutput(unfilteredOutput) {
+  if (!unfilteredOutput) {
+    throw new InternalServerError({
+      cause:
+        "Não foi possível 'output' a ser filtrado pelo 'authorization.filterOutput'",
+    });
   }
 }
 

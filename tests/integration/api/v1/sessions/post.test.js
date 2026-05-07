@@ -145,6 +145,7 @@ describe("POST /api/v1/sessions", () => {
         value: parsetSetCookie.value,
         maxAge: session.EXPIRATION_IN_MILLISSECONDS / 1000,
         path: "/",
+        sameSite: "lax",
         httpOnly: true,
       });
     });

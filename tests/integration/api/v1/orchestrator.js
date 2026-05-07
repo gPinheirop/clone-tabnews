@@ -57,7 +57,7 @@ async function createUser(userObject) {
   });
 }
 
-async function createSession(id) {
+async function createSessionById(id) {
   return await session.create(id);
 }
 
@@ -110,7 +110,7 @@ const orchestrator = {
   clearDatabase,
   runPendingMigrations,
   createUser,
-  createSession,
+  createSessionById,
   deleteAllEmails,
   getLastEmail,
   extractUUID,

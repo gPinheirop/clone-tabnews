@@ -3,6 +3,8 @@ import orchestrator from "../orchestrator";
 
 beforeAll(async () => {
   await orchestrator.awaitForAllServices();
+  await orchestrator.clearDatabase();
+  await orchestrator.runPendingMigrations();
 });
 
 describe("GET /api/v1/status", () => {
@@ -25,7 +27,9 @@ describe("GET /api/v1/status", () => {
     test("Retriving current system status", async () => {
       const createdUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUserById(createdUser.id);
-      const sessionObject = await orchestrator.createSession(activatedUser.id);
+      const sessionObject = await orchestrator.createSessionById(
+        activatedUser.id,
+      );
 
       const response = await fetch(`${webserver.originAPI}/status`, {
         headers: {
@@ -52,7 +56,9 @@ describe("GET /api/v1/status", () => {
         "read:status",
         "read:status:all",
       ]);
-      const sessionObject = await orchestrator.createSession(activatedUser.id);
+      const sessionObject = await orchestrator.createSessionById(
+        activatedUser.id,
+      );
 
       const response = await fetch(`${webserver.originAPI}/status`, {
         headers: {

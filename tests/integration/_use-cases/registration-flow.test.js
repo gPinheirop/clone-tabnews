@@ -15,20 +15,17 @@ describe("Use case: Registration Flow (all successful)", () => {
   let activationToken;
   let createSessionsResponseBody;
   test("Create user account", async () => {
-    const createUserResponse = await fetch(
-      `${webserver.originAPI}/users`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: "testeRegistro",
-          email: "registro@email.com",
-          password: "registrar",
-        }),
+    const createUserResponse = await fetch(`${webserver.originAPI}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        username: "testeRegistro",
+        email: "registro@email.com",
+        password: "registrar",
+      }),
+    });
     expect(createUserResponse.status).toBe(201);
 
     createUserResponseBody = await createUserResponse.json();
@@ -51,7 +48,7 @@ describe("Use case: Registration Flow (all successful)", () => {
 
     activationToken = orchestrator.extractUUID(lastEmail.text);
     expect(lastEmail.text).toContain(
-      `${webserver.originAPI}/cadastro/ativar/${activationToken}`,
+      `${webserver.origin}/cadastro/ativar/${activationToken}`,
     );
 
     const activationTokenObject =

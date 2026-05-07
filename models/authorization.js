@@ -55,6 +55,16 @@ function filterOutput(user, feature, unfilteredOutput) {
     }
   }
   if (feature === "read:user") {
+    if (user.id === unfilteredOutput.id) {
+      return {
+        id: unfilteredOutput.id,
+        username: unfilteredOutput.username,
+        email: unfilteredOutput.email,
+        features: unfilteredOutput.features,
+        created_at: unfilteredOutput.created_at,
+        updated_at: unfilteredOutput.updated_at,
+      };
+    }
     return {
       id: unfilteredOutput.id,
       username: unfilteredOutput.username,

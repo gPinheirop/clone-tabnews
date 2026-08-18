@@ -6,10 +6,14 @@ export default function ConfirmRegisterPage() {
     <DefaultLayout
       contentWidth="small"
       metadata={{
-        title: "Confirme seu email"
+        title: "Confirme seu email",
       }}
     >
-      <Banner variant="warning" title="Falta só uma etapa!" description="Abra o email enviado pelo Clone-Tabnews e clique no link de confirmação" />
+      <Banner
+        variant="warning"
+        title="Falta só uma etapa!"
+        description="Abra o email enviado pelo Clone-Tabnews e clique no link de confirmação"
+      />
     </DefaultLayout>
   );
 }
